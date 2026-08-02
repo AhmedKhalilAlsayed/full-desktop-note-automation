@@ -4,6 +4,12 @@
 
 ---
 
+## 🧪 Battle-Tested
+
+This workflow has been continuously used in daily software engineering and study environments since **June 2026**, successfully managing technical documentation, lecture notes, C/C++ sketches, and Linux system notes.
+
+---
+
 ## 🌟 Why Use This?
 
 Taking notes while studying or debugging usually breaks your focus. Switching back and forth between your IDE, browser, screenshot software, and note editor takes time and context-switching energy. 
@@ -17,8 +23,31 @@ This project automates the manual labor of documentation so you can stay in **fl
 
 ---
 
-## 🛠️ Key Features & Architecture
+## 🛠️ Architecture & Key Features & Usaged
 
+### 0. Structure
+* 
+```python
+The directory structure tree
+
+sketch
+	notes/docs
+	lec
+		notes/docs
+```
+* Your big directory for example `mynotes`
+* Every `sketch` represents a track/subject/project ... etc
+* Inside `sketch` you can make `lectures` or direct `notes`
+* Inside `lectures` you can make `notes`
+* Every creation for `lectures` or `notes` automatically append prefix is the datetime
+
+#### 0.1 API & CLI & Functions
+* `msketch "sketch name"` # make sketch, then you are in its directory
+* `mlec "lec name"` # make lecture, then you are in its directory, then vscode will be opend automatically
+* `mnote "note name"` # make note, and vscode will be opend automatically
+* `gsketch-sorted` # call this will show all files inside this sketch recursly and sorted by last moified date, and you can use `sort command line linux to sort them by prefix name (the created date)`
+* `mspaced-repetition` # spaced repetition, choose a some notes from recent week and 1 month ago and  month ago to respike the note in your mind again (and you can re-config by argumants)
+* 
 ### 1. Instant Visual Capture
 * **Window Capture:** Press a shortcut to automatically capture the active window and append it straight into your Markdown file.
 * **Area Selection:** Select any section of your screen to grab snippets, diagrams, or code blocks instantly.
@@ -33,7 +62,7 @@ Includes a built-in shell utility (`mspaced-repetition`) that:
 ### 3. File & Metadata Organization
 * Automatically organizes notes chronologically and structurally.
 * Enables easy command-line searching using standard UNIX utilities.
-* Fully compatible with standard Markdown renderers and PDF export tools (e.g., VS Code extensions, Pandoc).
+* Fully compatible with standard Markdown renderers and PDF export tools (e.g., VS Code extensions).
 
 ---
 
@@ -60,11 +89,6 @@ This tool highlights the flexibility of native Linux environment scripting:
 
 ---
 
-## 🧪 Battle-Tested
-
-This workflow has been continuously used in daily software engineering and study environments since **June 2026**, successfully managing technical documentation, lecture notes, C/C++ sketches, and Linux system notes.
-
----
 
 ## 🖥️ Platform Support
 
