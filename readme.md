@@ -1,6 +1,45 @@
 # ⚡ Full Desktop Note Automation
 
+---
+
+![Gemini_Generated_Image](Gemini_Generated_Image_wipwjjwipwjjwipw.png)
+
+---
+
 > A lightweight, keyboard-driven Linux workflow designed to capture, structure, and retain knowledge effortlessly while coding, studying, or watching lectures.
+
+---
+
+- [⚡ Full Desktop Note Automation](#-full-desktop-note-automation)
+	- [🧪 Battle-Tested](#-battle-tested)
+	- [🌟 Why Use This?](#-why-use-this)
+	- [🛠️ Architecture \& Key Features](#️-architecture--key-features)
+		- [0. Directory Structure \& CLI Tools](#0-directory-structure--cli-tools)
+			- [Command‑Line Interface (CLI)](#commandline-interface-cli)
+		- [1. Instant Visual Capture](#1-instant-visual-capture)
+		- [2. Smart Spaced Repetition Engine](#2-smart-spaced-repetition-engine)
+		- [3. File \& Metadata Organisation](#3-file--metadata-organisation)
+	- [🎹 Custom Keyboard Shortcuts](#-custom-keyboard-shortcuts)
+	- [💻 Tech Stack \& Linux Magic](#-tech-stack--linux-magic)
+		- [0. Native Linux Tools](#0-native-linux-tools)
+		- [📦 1. Dependencies \& Installation](#-1-dependencies--installation)
+			- [Required Tools](#required-tools)
+			- [One‑Line Install (Ubuntu / Debian)](#oneline-install-ubuntu--debian)
+			- [For Other Distributions](#for-other-distributions)
+			- [Verification](#verification)
+	- [🖥️ Platform Support](#️-platform-support)
+- [بالعربي - ⚡ أتمتة كاملة لتدوين الملاحظات على سطح المكتب](#بالعربي----أتمتة-كاملة-لتدوين-الملاحظات-على-سطح-المكتب)
+	- [🧪 مجرَّب](#-مجرَّب)
+	- [🌟 ليه تستخدمه؟](#-ليه-تستخدمه)
+	- [🛠️ الهيكل والمميزات الأساسية](#️-الهيكل-والمميزات-الأساسية)
+		- [٠. هيكل المجلدات وأدوات سطر الأوامر](#٠-هيكل-المجلدات-وأدوات-سطر-الأوامر)
+			- [أوامر التحكم (CLI)](#أوامر-التحكم-cli)
+		- [١. التقاط بصري فوري](#١-التقاط-بصري-فوري)
+		- [٢. مراجعة الملاحظات](#٢-مراجعة-الملاحظات)
+		- [٣. تنظيم الملفات والبيانات](#٣-تنظيم-الملفات-والبيانات)
+	- [🎹 اختصارات الكيبورد المخصصة](#-اختصارات-الكيبورد-المخصصة)
+	- [💻 التقنيات وسحر لينكس](#-التقنيات-وسحر-لينكس)
+	- [🖥️ الدعم على المنصات](#️-الدعم-على-المنصات)
 
 ---
 
@@ -39,13 +78,15 @@ mynotes/                           # your root directory
 
 All `lectures` and `notes` are automatically prefixed with the current date and time, making chronological sorting trivial.
 
+![msketch command](Recording-msketch.gif)
+
 #### Command‑Line Interface (CLI)
 
-- `msketch "sketch name"` – Creates a new sketch and changes into its directory.
-- `mlec "lec name"` – Creates a new lecture inside the current sketch, changes into it, and opens VS Code automatically.
-- `mnote "note name"` – Creates a new note in the current directory and opens VS Code.
-- `gsketch-sorted` – Lists all files inside the current sketch recursively, sorted by last modified date. You can also pipe the output to `sort` to order by the filename prefix (creation date).
-- `mspaced-repetition` – Launches the spaced repetition tool. It selects a manageable batch of notes from the last week, ~1 month ago, and ~3 months ago to reinforce memory. Arguments allow customisation of the time windows and batch size.
+- `msketch "sketch name"`: **make sketch** – Creates a new sketch and changes into its directory.
+- `mlec "lec name"`: **make lecture** – Creates a new lecture inside the current sketch, changes into it, and opens VS Code automatically.
+- `mnote "note name"`: **make note** – Creates a new note in the current directory and opens VS Code.
+- `gsketch-sorted`: **get sketch** – Lists all files inside the current sketch recursively, sorted by last modified date. You can also pipe the output to `sort` to order by the filename prefix (creation date).
+- `mspaced-repetition`: **make spaced-repetition** – Launches the spaced repetition tool. It selects a manageable batch of notes from the last week, ~1 month ago, and ~3 months ago to reinforce memory. Arguments allow customisation of the time windows and batch size.
 
 ---
 
@@ -88,12 +129,69 @@ Designed to feel like native window management shortcuts (similar to `Alt+Tab`):
 
 ## 💻 Tech Stack & Linux Magic
 
+### 0. Native Linux Tools
 This tool highlights the flexibility of native Linux environment scripting:
 
 - **Shell Scripting (`bash`)** – Core logic leveraging standard utilities (`find`, `grep`, `mtime`, `sort`, `shuf`).
 - **Display & Window Automation** – Uses `xdotool` and native desktop screenshot utilities to simulate human input and capture active windows.
 - **Environment** – Works seamlessly with **VS Code** (or any preferred text editor/IDE).
 - **Notifications** – Uses `notify-send` for non‑intrusive desktop reminders.
+
+
+### 📦 1. Dependencies & Installation
+
+Below you’ll find a brief description of each tool and a **single command that installs everything** at once on **Debian‑based** distributions (Ubuntu, Mint, etc.). For other distros, you can adapt the package manager accordingly.
+
+#### Required Tools
+
+| Tool              | Purpose                                                                                 |
+| :---------------- | :-------------------------------------------------------------------------------------- |
+| **xdotool**       | Simulates keyboard input and finds/manages windows (used to focus VSCode and paste).    |
+| **flameshot**     | Interactive area screenshot tool (`flameshot gui`), used by the area‑capture script.    |
+| **maim**          | Lightweight screenshot utility that captures a specific window (used in window‑capture).|
+| **xclip**         | Manipulates the X selection (clipboard) – it holds the captured image for pasting.      |
+| **libnotify-bin** | Provides `notify‑send`, which delivers desktop notifications (e.g., spaced‑repetition reminders). |
+| **bc**            | Command‑line calculator; used to compute dynamic delays based on CPU load.              |
+| **coreutils**     | (Always present) supplies `date`, `find`, `shuf`, `sort`, `grep`, `realpath`, etc.      |
+
+> **Optional** – [Visual Studio Code](https://code.visualstudio.com/) (`code`) is used as the preferred Markdown editor, but you can replace it with any other editor in the scripts.
+
+---
+
+#### One‑Line Install (Ubuntu / Debian)
+
+```bash
+sudo apt update && sudo apt install -y xdotool flameshot maim xclip libnotify-bin bc
+```
+
+After installation, all scripts should work out‑of‑the‑box.
+
+---
+
+#### For Other Distributions
+
+| Distro Family | Package Manager | Equivalent Command                                             |
+| :------------ | :-------------- | :------------------------------------------------------------- |
+| **Fedora**    | `dnf`           | `sudo dnf install xdotool flameshot maim xclip libnotify bc`   |
+| **Arch Linux**| `pacman`        | `sudo pacman -S xdotool flameshot maim xclip libnotify bc`     |
+| **openSUSE**  | `zypper`        | `sudo zypper install xdotool flameshot maim xclip libnotify bc`|
+
+---
+
+#### Verification
+
+Once installed, you can test each component quickly:
+
+```bash
+xdotool --version
+flameshot --version
+maim --version
+xclip -version
+notify-send "Test" "Hello"   # should pop up a notification
+echo "1.2 + 2.3" | bc        # should output 3.5
+```
+
+If all commands return without errors, you’re ready to go.
 
 ---
 
@@ -103,12 +201,10 @@ This tool highlights the flexibility of native Linux environment scripting:
 - **Windows** – Compatible via WSL (Windows Subsystem for Linux) with display server mapping, or Cygwin environments.
 
 ---
-
-## 📝 بالعربي
-
+---
 ---
 
-# ⚡ أتمتة كاملة لتدوين الملاحظات على سطح المكتب
+# بالعربي - ⚡ أتمتة كاملة لتدوين الملاحظات على سطح المكتب
 
 > نظام شغل خفيف يعتمد على الكيبورد في لينكس، مصمم عشان تلتقط، تنظم، وتثبت المعلومات من غير مجهود وأنت بتكتب كود، بتذاكر، أو بتتفرج على محاضرات.
 

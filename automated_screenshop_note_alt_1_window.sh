@@ -62,6 +62,8 @@ fi
 xdotool windowactivate "$md_WinId" && sleep $delay
 
 xdotool key ctrl+v && sleep $delay && xdotool key End && sleep $delay && xdotool key Return && sleep $delay
+
+
 # sync
 #sleep $delay
 #xdotool key End
@@ -211,3 +213,8 @@ xdotool key ctrl+v && sleep $delay && xdotool key End && sleep $delay && xdotool
 
 
 # set +e
+
+
+
+
+
