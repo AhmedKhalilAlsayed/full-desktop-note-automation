@@ -151,7 +151,7 @@ mspaced-repetition() {
     echo "---------------------------------------------------------"
     echo "💡 REMINDER: $random_quote"
     # timer
-    echo -e "\nset ~1h timer"
+    # echo -e "\nset ~1h timer"
     echo "========================================================="
     
     # 1. Recent Review (Fresh context)
@@ -173,7 +173,7 @@ mspaced-repetition() {
 # get all files of the sketch
 gsketch-sorted() {
     sketch=${1:-.}
-    echo ">> All Sketch: (Sorted):";
+    echo ">> All Sketch: (Sorted By Last Modified):";
     find "$sketch" \( -name "*.md" -o -name "*.pdf" \) -printf "%T@ %p\n" | sort -n | cut -d' ' -f2-;
 }
 
