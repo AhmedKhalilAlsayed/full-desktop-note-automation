@@ -117,65 +117,80 @@ mnote() {
 # spaced-repetition
 
 mspaced-repetition() {
-    local target_dir="${1:-.}"
-    local days="${2:-7}"
-    local max_short_term="${3:-3}"
-    local max_medium_term="${4:-2}"
-    local max_long_term="${5:-1}"
+    # Extract directory arguments until we hit options or defaults
+    local target_dirs=()
+    
+    # Parse directories passed as positional parameters
+    while [[ $# -gt 0 && ! "$1" =~ ^[0-9]+$ ]]; do
+        target_dirs+=("$1")
+        shift
+    done
+
+    # Default to current directory if no path was provided
+    if [ ${#target_dirs[@]} -eq 0 ]; then
+        target_dirs=(".")
+    fi
+
+    # Remaining arguments are numeric parameters
+    local days="${1:-7}"
+    local max_short_term="${2:-3}"
+    local max_medium_term="${3:-2}"
+    local max_long_term="${4:-1}"
     
     local total_max=$((max_short_term + max_medium_term + max_long_term))
     
-    # Array of real-world mindset reminders
     local quotes=(
         "Recall, don't relearn! Skim headings and move on."
         "Not an exam! You're refreshing map locations, not memorizing text."
-        "If it's complex, schedule a dedicated session. not NOW!"
+        "If it's complex, schedule a dedicated session. NOT NOW!"
         "Your notes are your external brain. You only need conceptual awareness."
         "Don't stare at words without absorbing. Keep it moving!"
         "Focus on fast retrieval, not perfection."
         "For a long, productive career, not a one-day college exam."
         "Not in marathon!!!"
-        "saving your Saturday for real project work!"
+        "Saving your Saturday for real project work!"
     )
     
-    # Pick a random quote for this session
     local random_quote="${quotes[$RANDOM % ${#quotes[@]}]}"
-    
-    # Trigger desktop notification
-    # notify-send -t 6000 "🧠 Spaced Repetition Mode" "$random_quote"
     
     echo "========================================================="
     echo ">> Spaced Repetition Review Dashboard <<"
-    echo "Target Directory : $(realpath "$target_dir")"
-    echo "Max Review Target: $total_max files max"
+    echo "Target Directories:"
+    for dir in "${target_dirs[@]}"; do
+        echo "  - $(realpath "$dir")"
+    done
+    echo "Max Review Target  : $total_max files max"
     echo "---------------------------------------------------------"
     echo "💡 REMINDER: $random_quote"
-    # timer
-    # echo -e "\nset ~1h timer"
     echo "========================================================="
     
-    # 1. Recent Review (Fresh context)
+    # 1. Recent Review
     echo -e "\n[!] Fresh Notes (Last $days days | Max: $max_short_term):"
-    find "$target_dir" -name "*.md" -mtime -"$days" 2>/dev/null | shuf -n "$max_short_term" | sort
+    find "${target_dirs[@]}" -name "*.md" -mtime -"$days" 2>/dev/null | shuf -n "$max_short_term" | sort
     
-    # 2. Medium-Term Review (~1 Month ago)
+    # 2. Medium-Term Review
     echo -e "\n[!] ~1 Month Ago (20-40 days | Max: $max_medium_term):"
-    find "$target_dir" -name "*.md" -mtime +20 -mtime -40 2>/dev/null | shuf -n "$max_medium_term" | sort
+    find "${target_dirs[@]}" -name "*.md" -mtime +20 -mtime -40 2>/dev/null | shuf -n "$max_medium_term" | sort
     
-    # 3. Long-Term Review (~3 Months ago)
+    # 3. Long-Term Review
     echo -e "\n[!] ~3 Months Ago (80-100 days | Max: $max_long_term):"
-    find "$target_dir" -name "*.md" -mtime +80 -mtime -100 2>/dev/null | shuf -n "$max_long_term" | sort
-    
-    
+    find "${target_dirs[@]}" -name "*.md" -mtime +80 -mtime -100 2>/dev/null | shuf -n "$max_long_term" | sort
 }
+
 ############################################################
 
-# get all files of the sketch
+# Get all files across one or multiple sketches
 gsketch() {
-    sketch=${1:-.}
-    echo ">> All Sketch: (Sorted By Last Modified):";
-    find "$sketch" \( -name "*.md" -o -name "*.pdf" \) -printf "%T@ %p\n" | sort -n | cut -d' ' -f2-;
+    local target_dirs=("$@")
+    if [ ${#target_dirs[@]} -eq 0 ]; then
+        target_dirs=(".")
+    fi
+
+    echo ">> All Sketch Files (Sorted By Last Modified):"
+    find "${target_dirs[@]}" \( -name "*.md" -o -name "*.pdf" \) -printf "%T@ %p\n" 2>/dev/null | sort -n | cut -d' ' -f2-
 }
+
+################################################################
 
 # to change dir to the parent of md/pdf file
 # uses: when run gsketch-sorted(), you will want to open the dir itself of the md/pdf file, use this cdp()
