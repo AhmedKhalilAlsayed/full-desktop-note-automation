@@ -171,7 +171,7 @@ mspaced-repetition() {
 ############################################################
 
 # get all files of the sketch
-gsketch-sorted() {
+gsketch() {
     sketch=${1:-.}
     echo ">> All Sketch: (Sorted By Last Modified):";
     find "$sketch" \( -name "*.md" -o -name "*.pdf" \) -printf "%T@ %p\n" | sort -n | cut -d' ' -f2-;
