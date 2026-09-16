@@ -10,7 +10,7 @@
 # delay = base + ratio, with max delay is 1 sec
 high_cpu=$(top -bn1 | awk 'NR>7 {print $9}' | sort -rn | head -1)
 delay=$(echo "0.2 + $high_cpu / 100" | bc -l) # tuning
-delay_max=3
+delay_max=1 #3
 
 if (( $(echo "$delay > $delay_max" | bc -l) )); then
     delay=$delay_max

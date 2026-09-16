@@ -15,6 +15,7 @@
 	- [🌟 Why Use This?](#-why-use-this)
 	- [🛠️ Architecture \& Key Features](#️-architecture--key-features)
 		- [0. Directory Structure \& CLI Tools](#0-directory-structure--cli-tools)
+		- [My Real Notes Example](#my-real-notes-example)
 			- [Command‑Line Interface (CLI)](#commandline-interface-cli)
 		- [1. Instant Visual Capture](#1-instant-visual-capture)
 		- [2. Smart Spaced Repetition Engine](#2-smart-spaced-repetition-engine)
@@ -64,8 +65,7 @@ Taking notes while studying or debugging usually breaks your focus. Switching ba
 
 ### 0. Directory Structure & CLI Tools
 
-The workflow follows a simple but powerful organisational scheme:
-
+- The workflow follows a simple but powerful organisational scheme:
 ```
 mynotes/                           # your root directory
 ├── sketch_<name>/                 # each sketch represents a track/subject/project
@@ -75,19 +75,26 @@ mynotes/                           # your root directory
 │       └── notes/
 │           └── <datetime>_<note_name>.md
 ```
-
-All `lectures` and `notes` are automatically prefixed with the current date and time, making chronological sorting trivial.
-
-![msketch command](Recording-msketch.gif)
-
+- All `lectures` and `notes` are automatically prefixed with the current date and time, making chronological sorting trivial.
+### My Real Notes Example
+- ![alt text](image.png)
+- ![alt text](image-1.png)
+- ![alt text](image-3.png)
+- Loading ...
+- ![alt text](image-4.png)
+- ![alt text](image-5.png)
+- ![alt text](image-6.png)
+- ![alt text](image-7.png)
+- 
 #### Command‑Line Interface (CLI)
 
 - `msketch "sketch name"`: **make sketch** – Creates a new sketch and changes into its directory.
 - `mlec "lec name"`: **make lecture** – Creates a new lecture inside the current sketch, changes into it, and opens VS Code automatically.
 - `mnote "note name"`: **make note** – Creates a new note in the current directory and opens VS Code.
 - `gsketch-sorted`: **get sketch** – Lists all files inside the current sketch recursively, sorted by last modified date. You can also pipe the output to `sort` to order by the filename prefix (creation date).
-- `mspaced-repetition`: **make spaced-repetition** – Launches the spaced repetition tool. It selects a manageable batch of notes from the last week, ~1 month ago, and ~3 months ago to reinforce memory. Arguments allow customisation of the time windows and batch size.
-
+- `gspaced-repetition`: **get/make spaced-repetition** – Launches the spaced repetition tool. It selects a manageable batch of notes from the last week, ~1 month ago, and ~3 months ago to reinforce memory. Arguments allow customisation of the time windows and batch size.
+- `cdp`: change to the parent directory of the note/lec md file.
+- ![msketch command](Recording-msketch.gif)
 ---
 
 ### 1. Instant Visual Capture

@@ -116,7 +116,7 @@ mnote() {
 #####################################################
 # spaced-repetition
 
-mspaced-repetition() {
+gspaced-repetition() {
     # Extract directory arguments until we hit options or defaults
     local target_dirs=()
     
@@ -125,12 +125,12 @@ mspaced-repetition() {
         target_dirs+=("$1")
         shift
     done
-
+    
     # Default to current directory if no path was provided
     if [ ${#target_dirs[@]} -eq 0 ]; then
         target_dirs=(".")
     fi
-
+    
     # Remaining arguments are numeric parameters
     local days="${1:-7}"
     local max_short_term="${2:-3}"
@@ -140,15 +140,17 @@ mspaced-repetition() {
     local total_max=$((max_short_term + max_medium_term + max_long_term))
     
     local quotes=(
-        "Recall, don't relearn! Skim headings and move on."
-        "Not an exam! You're refreshing map locations, not memorizing text."
-        "If it's complex, schedule a dedicated session. NOT NOW!"
+        # "Recall, don't relearn! Skim headings and move on."
+        # "Not an exam! You're refreshing map locations, not memorizing text."
+        # "If it's complex, schedule a dedicated session. NOT NOW!"
         "Your notes are your external brain. You only need conceptual awareness."
-        "Don't stare at words without absorbing. Keep it moving!"
+        # "Don't stare at words without absorbing. Keep it moving!"
         "Focus on fast retrieval, not perfection."
         "For a long, productive career, not a one-day college exam."
         "Not in marathon!!!"
-        "Saving your Saturday for real project work!"
+        "التطبيق والشغل بايدك هو الي بيعلم بجد"
+        "شوف الشغل واتعلم منه"
+        # "Saving your Saturday for real project work!"
     )
     
     local random_quote="${quotes[$RANDOM % ${#quotes[@]}]}"
@@ -166,10 +168,12 @@ mspaced-repetition() {
     
     # 1. Recent Review
     echo -e "\n[!] Fresh Notes (Last $days days | Max: $max_short_term):"
+    # echo -e "\n[!] These are new. No problem"
     find "${target_dirs[@]}" -name "*.md" -mtime -"$days" 2>/dev/null | shuf -n "$max_short_term" | sort
     
     # 2. Medium-Term Review
     echo -e "\n[!] ~1 Month Ago (20-40 days | Max: $max_medium_term):"
+    echo -e "\n[!] Should be easy?"
     find "${target_dirs[@]}" -name "*.md" -mtime +20 -mtime -40 2>/dev/null | shuf -n "$max_medium_term" | sort
     
     # 3. Long-Term Review
@@ -185,7 +189,7 @@ gsketch() {
     if [ ${#target_dirs[@]} -eq 0 ]; then
         target_dirs=(".")
     fi
-
+    
     echo ">> All Sketch Files (Sorted By Last Modified):"
     find "${target_dirs[@]}" \( -name "*.md" -o -name "*.pdf" \) -printf "%T@ %p\n" 2>/dev/null | sort -n | cut -d' ' -f2-
 }
