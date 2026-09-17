@@ -197,7 +197,7 @@ gsketch() {
 ################################################################
 
 # to change dir to the parent of md/pdf file
-# uses: when run gsketch-sorted(), you will want to open the dir itself of the md/pdf file, use this cdp()
+# uses: when you want to open the dir itself of the md/pdf file, use this cdp()
 cdp(){
     cd $(dirname $(realpath "$1"));
 }
