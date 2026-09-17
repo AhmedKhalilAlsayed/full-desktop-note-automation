@@ -21,7 +21,7 @@ notes_regex="\.md.+Code" # means .md in vscode
 
 # 2. Take window screenshot
 # get this window, make sure you are in it
-activeWinId=$(xdotool getactivewindow)
+# activeWinId=$(xdotool getactivewindow)
 #xdotool windowactivate "$activeWinId" && sleep $delay
 # sleep 0.1
 
