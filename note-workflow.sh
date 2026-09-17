@@ -118,7 +118,7 @@ mnote() {
 #####################################################
 # spaced-repetition
 
-gspaced-repetition() {
+gspaced-repetition-md-only() {
     # Extract directory arguments until we hit options or defaults
     local target_dirs=()
     
@@ -207,14 +207,14 @@ _print_terminal_link() {
     fi
 }
 
-# Get all notes across one or multiple sketches
-gnotes() {
+# Get all across one or multiple sketches
+gsketch() {
     local target_dirs=("$@")
     if [ ${#target_dirs[@]} -eq 0 ]; then
         target_dirs=(".")
     fi
     
-    echo ">> All Notes (Sorted By Last Modified; click a path to open it):"
+    echo ">> All (Sorted By Last Modified; click a path to open it):"
     while IFS= read -r entry; do
         _print_terminal_link "${entry#* }"
     done < <(find "${target_dirs[@]}" \( -name "*.md" -o -name "*.pdf" \) -printf "%T@ %p\n" 2>/dev/null | sort -n)

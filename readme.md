@@ -94,9 +94,9 @@ mynotes/                           # your root directory
 - `msketch "sketch name"`: **make sketch** – Creates a new sketch and changes into its directory.
 - `mlec "lec name"`: **make lecture** – Creates a new lecture inside the current sketch, changes into it, and opens VS Code automatically.
 - `mnote "note name"`: **make note** – Creates a new note in the current directory and opens VS Code.
-- `gnotes`: **get notes** – Lists all Markdown and PDF files inside the current sketch recursively, sorted by last modified date. In supporting terminals, click a path to open the file in the GUI.
+- `gsketch`: **get sketch** – Lists all Markdown and PDF files inside the current sketch recursively, sorted by last modified date. In supporting terminals, click a path to open the file in the GUI.
 - `gsketches`: **get sketches** – Lists all directories containing `sketch` in their name as a sorted tree, including each full path to distinguish repeated names. In supporting terminals, click a path to open the directory in the GUI. Pass one or more directories to search specific locations.
-- `gspaced-repetition`: **get/make spaced-repetition** – Launches the spaced repetition tool. It selects a manageable batch of clickable notes from the last week, ~1 month ago, and ~3 months ago to reinforce memory. Arguments allow customisation of the time windows and batch size.
+- `gspaced-repetition-md-only`: **get/make spaced-repetition** – Launches the spaced repetition tool. It selects a manageable batch of clickable notes from the last week, ~1 month ago, and ~3 months ago to reinforce memory. Arguments allow customisation of the time windows and batch size.
 - `cdp`: change to the parent directory of the note/lec md file.
 - ![msketch command](Recording-msketch.gif)
 ---
