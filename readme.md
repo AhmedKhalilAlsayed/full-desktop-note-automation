@@ -91,7 +91,7 @@ mynotes/                           # your root directory
 - `msketch "sketch name"`: **make sketch** – Creates a new sketch and changes into its directory.
 - `mlec "lec name"`: **make lecture** – Creates a new lecture inside the current sketch, changes into it, and opens VS Code automatically.
 - `mnote "note name"`: **make note** – Creates a new note in the current directory and opens VS Code.
-- `gsketch-sorted`: **get sketch** – Lists all files inside the current sketch recursively, sorted by last modified date. You can also pipe the output to `sort` to order by the filename prefix (creation date).
+- `gsketch`: **get sketch** – Lists all files inside the current sketch recursively, sorted by last modified date. You can also pipe the output to `sort` to order by the filename prefix (creation date).
 - `gspaced-repetition`: **get/make spaced-repetition** – Launches the spaced repetition tool. It selects a manageable batch of notes from the last week, ~1 month ago, and ~3 months ago to reinforce memory. Arguments allow customisation of the time windows and batch size.
 - `cdp`: change to the parent directory of the note/lec md file.
 - ![msketch command](Recording-msketch.gif)
@@ -107,7 +107,7 @@ mynotes/                           # your root directory
 
 ### 2. Smart Spaced Repetition Engine
 
-The built‑in shell utility `mspaced-repetition`:
+The built‑in shell utility `gspaced-repetition`:
 - Randomly samples your notes based on interval brackets (Last 7 Days, ~1 Month Ago, ~3 Months Ago).
 - Caps reviews to small, manageable batches to prevent study burnout.
 - Integrates native desktop notifications (`notify-send`) with randomised mindset reminders, keeping reviews fast and concept‑focused.
@@ -128,9 +128,9 @@ Designed to feel like native window management shortcuts (similar to `Alt+Tab`):
 
 | Shortcut      | Action                                                                                    |
 | :------------ | :---------------------------------------------------------------------------------------- |
-| **`Alt + 1`** | Takes a screenshot of the active window and appends it to your current Markdown document. |
-| **`Alt + 2`** | Prompts for a selected region screenshot and appends it to your Markdown document.        |
-| **`Alt + 3`** | Toggles/opens your primary active Markdown note file.                                     |
+| **`Alt + 1`** | Takes a **screenshot of the active window** and appends it to your current Markdown document. |
+| **`Alt + 2`** | Prompts for a **selected region screenshot** and appends it to your Markdown document.        |
+| **`Alt + 3`** | Toggles/opens your VSCode.                                     |
 
 ---
 
