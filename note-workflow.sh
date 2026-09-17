@@ -173,7 +173,7 @@ gspaced-repetition() {
     
     # 2. Medium-Term Review
     echo -e "\n[!] ~1 Month Ago (20-40 days | Max: $max_medium_term):"
-    echo -e "\n[!] Should be easy?"
+    echo -e "[!] Should be easy?"
     find "${target_dirs[@]}" -name "*.md" -mtime +20 -mtime -40 2>/dev/null | shuf -n "$max_medium_term" | sort
     
     # 3. Long-Term Review
