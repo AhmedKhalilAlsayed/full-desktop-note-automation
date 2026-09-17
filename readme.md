@@ -1,5 +1,8 @@
 # ⚡ Full Desktop Note Automation
 
+**Author:** Ahmed Khalil  
+**Improvements:** Copilot
+
 ---
 
 ![Gemini_Generated_Image](Gemini_Generated_Image_wipwjjwipwjjwipw.png)
@@ -91,8 +94,9 @@ mynotes/                           # your root directory
 - `msketch "sketch name"`: **make sketch** – Creates a new sketch and changes into its directory.
 - `mlec "lec name"`: **make lecture** – Creates a new lecture inside the current sketch, changes into it, and opens VS Code automatically.
 - `mnote "note name"`: **make note** – Creates a new note in the current directory and opens VS Code.
-- `gsketch`: **get sketch** – Lists all files inside the current sketch recursively, sorted by last modified date. You can also pipe the output to `sort` to order by the filename prefix (creation date).
-- `gspaced-repetition`: **get/make spaced-repetition** – Launches the spaced repetition tool. It selects a manageable batch of notes from the last week, ~1 month ago, and ~3 months ago to reinforce memory. Arguments allow customisation of the time windows and batch size.
+- `gnotes`: **get notes** – Lists all Markdown and PDF files inside the current sketch recursively, sorted by last modified date. In supporting terminals, click a path to open the file in the GUI.
+- `gsketches`: **get sketches** – Lists all directories containing `sketch` in their name as a sorted tree, including each full path to distinguish repeated names. In supporting terminals, click a path to open the directory in the GUI. Pass one or more directories to search specific locations.
+- `gspaced-repetition`: **get/make spaced-repetition** – Launches the spaced repetition tool. It selects a manageable batch of clickable notes from the last week, ~1 month ago, and ~3 months ago to reinforce memory. Arguments allow customisation of the time windows and batch size.
 - `cdp`: change to the parent directory of the note/lec md file.
 - ![msketch command](Recording-msketch.gif)
 ---
@@ -257,8 +261,9 @@ mynotes/                           # مجلدك الرئيسي
 - `msketch "اسم السكتش"` – بيعمل سكتش جديد ويدخل لك مجلده.
 - `mlec "اسم المحاضرة"` – بيعمل محاضرة جديدة جوه السكتش الحالي، ويدخل لك مجلدها ويفتح VS Code أوتوماتيك.
 - `mnote "اسم الملاحظة"` – بيعمل ملاحظة جديدة في المجلد الحالي ويفتح VS Code.
-- `gsketch-sorted` – بيعرض كل الملفات جوه السكتش الحالي بالترتيب حسب تاريخ التعديل. تقدر تستخدم `sort` عشان ترتب حسب البادئة (تاريخ الإنشاء).
-- `mspaced-repetition` – بيشغل أداة المراجعة المكثفة. بتيجي على عدد بسيط من الملاحظات من الأسبوع الأخير، ومن شهر تقريباً، ومن ٣ شهور عشان ترسخ المعلومة. تقدر تظبط الفترات وعدد الملاحظات بمعاملات إضافية.
+- `gnotes` – بيعرض كل ملفات Markdown وPDF جوه السكتش الحالي بالترتيب حسب تاريخ التعديل، وفي التيرمنالات اللي بتدعم الروابط تقدر تدوس على المسار عشان تفتح الملف.
+- `gsketches` – بيعرض كل المجلدات اللي اسمها بيحتوي على `sketch` في شكل شجرة مرتبة، مع المسار الكامل عشان تفرق بين الأسماء المتكررة. وفي التيرمنالات اللي بتدعم الروابط تقدر تدوس على المسار عشان تفتح المجلد. ممكن تمرر له مجلد أو أكثر للبحث في أماكن محددة.
+- `gspaced-repetition` – بيشغل أداة المراجعة المكثفة. بيجيب عدد بسيط من الملاحظات من الأسبوع الأخير، ومن شهر تقريباً، ومن ٣ شهور عشان ترسخ المعلومة، والمسارات بتكون قابلة للضغط في التيرمنال المدعوم. تقدر تظبط الفترات وعدد الملاحظات بمعاملات إضافية.
 
 ---
 
@@ -272,7 +277,7 @@ mynotes/                           # مجلدك الرئيسي
 
 ### ٢. مراجعة الملاحظات
 
-الأداة المدمجة `mspaced-repetition`:
+الأداة المدمجة `gspaced-repetition`:
 - بتختار عشوائياً ملاحظات حسب فترات محددة (آخر ٧ أيام، شهر، ٣ شهور).
 - بتحدد عدد المراجعات عشان تبقى كمية صغيرة ومتناسبة.
 - بتستخدم إشعارات سطح المكتب (`notify-send`) مع تذكيرات عشوائية محفزة عشان تخلي المراجعة سريعة ومركزة على المفهوم.

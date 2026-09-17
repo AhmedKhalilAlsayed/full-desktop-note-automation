@@ -1,4 +1,6 @@
 #! /bin/env bash
+# Author: Ahmed Khalil
+# Improvements: Copilot
 
 # v4+
 # v3

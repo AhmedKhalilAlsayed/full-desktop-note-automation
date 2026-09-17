@@ -1,4 +1,6 @@
 #! /bin/env bash
+# Author: Ahmed Khalil
+# Improvements: Copilot
 
 # v4+
 
@@ -213,7 +215,6 @@ xdotool key ctrl+v && sleep $delay && xdotool key End && sleep $delay && xdotool
 
 
 # set +e
-
 
 
 

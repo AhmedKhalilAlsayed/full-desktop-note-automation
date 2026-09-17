@@ -1,4 +1,6 @@
 #! /bin/env bash
+# Author: Ahmed Khalil
+# Improvements: Copilot
 
 
 # The directory structure
@@ -169,29 +171,78 @@ gspaced-repetition() {
     # 1. Recent Review
     echo -e "\n[!] Fresh Notes (Last $days days | Max: $max_short_term):"
     # echo -e "\n[!] These are new. No problem"
-    find "${target_dirs[@]}" -name "*.md" -mtime -"$days" 2>/dev/null | shuf -n "$max_short_term" | sort
+    while IFS= read -r note; do
+        _print_terminal_link "$note"
+    done < <(find "${target_dirs[@]}" -name "*.md" -mtime -"$days" 2>/dev/null | shuf -n "$max_short_term" | sort)
     
     # 2. Medium-Term Review
     echo -e "\n[!] ~1 Month Ago (20-40 days | Max: $max_medium_term):"
     echo -e "[!] Should be easy?"
-    find "${target_dirs[@]}" -name "*.md" -mtime +20 -mtime -40 2>/dev/null | shuf -n "$max_medium_term" | sort
+    while IFS= read -r note; do
+        _print_terminal_link "$note"
+    done < <(find "${target_dirs[@]}" -name "*.md" -mtime +20 -mtime -40 2>/dev/null | shuf -n "$max_medium_term" | sort)
     
     # 3. Long-Term Review
     echo -e "\n[!] ~3 Months Ago (80-100 days | Max: $max_long_term):"
-    find "${target_dirs[@]}" -name "*.md" -mtime +80 -mtime -100 2>/dev/null | shuf -n "$max_long_term" | sort
+    while IFS= read -r note; do
+        _print_terminal_link "$note"
+    done < <(find "${target_dirs[@]}" -name "*.md" -mtime +80 -mtime -100 2>/dev/null | shuf -n "$max_long_term" | sort)
 }
 
 ############################################################
 
-# Get all files across one or multiple sketches
-gsketch() {
+# Print a clickable file:// link when the output is an interactive terminal.
+_print_terminal_link() {
+    local path="$1"
+    local label="${2:-$path}"
+    local absolute_path
+    local uri
+
+    absolute_path=$(realpath -- "$path") || return 1
+    uri=$(printf '%s' "$absolute_path" | sed -e 's/%/%25/g' -e 's/ /%20/g' -e 's/#/%23/g' -e 's/?/%3F/g')
+    if [ -t 1 ] && [ "${TERM:-dumb}" != "dumb" ]; then
+        printf '\033]8;;file://%s\033\\%s\033]8;;\033\\\n' "$uri" "$label"
+    else
+        printf '%s\n' "$label"
+    fi
+}
+
+# Get all notes across one or multiple sketches
+gnotes() {
     local target_dirs=("$@")
     if [ ${#target_dirs[@]} -eq 0 ]; then
         target_dirs=(".")
     fi
     
-    echo ">> All Sketch Files (Sorted By Last Modified):"
-    find "${target_dirs[@]}" \( -name "*.md" -o -name "*.pdf" \) -printf "%T@ %p\n" 2>/dev/null | sort -n | cut -d' ' -f2-
+    echo ">> All Notes (Sorted By Last Modified; click a path to open it):"
+    while IFS= read -r entry; do
+        _print_terminal_link "${entry#* }"
+    done < <(find "${target_dirs[@]}" \( -name "*.md" -o -name "*.pdf" \) -printf "%T@ %p\n" 2>/dev/null | sort -n)
+}
+
+############################################################
+
+# Get all directories whose names contain "sketch", shown as a tree
+gsketches() {
+    local target_dirs=("$@")
+    if [ ${#target_dirs[@]} -eq 0 ]; then
+        target_dirs=(".")
+    fi
+
+    echo ">> Sketch Directories (Sorted Tree; click a path to open it):"
+    for root in "${target_dirs[@]}"; do
+        local root_path
+        root_path=$(realpath "$root") || continue
+        _print_terminal_link "$root_path" "+-- $(basename "$root_path") [$root_path]"
+        while IFS= read -r sketch_dir; do
+            local relative_path depth prefix label
+            relative_path="${sketch_dir#"$root_path"/}"
+            depth=$(awk -F/ '{print NF}' <<< "$relative_path")
+            prefix=$(printf '%*s' $((depth * 3)) '')
+            label="${prefix}+-- $(basename "$sketch_dir") [$sketch_dir]"
+            _print_terminal_link "$sketch_dir" "$label"
+        done < <(find "$root_path" -mindepth 1 -type d -iname "*sketch*" -print 2>/dev/null | sort -f -V)
+    done
 }
 
 ################################################################
