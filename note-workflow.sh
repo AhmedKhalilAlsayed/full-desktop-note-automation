@@ -118,13 +118,41 @@ mnote() {
 #####################################################
 # spaced-repetition
 
-gspaced-repetition-md-only() {
-    # Extract directory arguments until we hit options or defaults
+# Spaced-repetition settings. Edit these values to change the review ranges
+# and the maximum number of files selected for each range.
+SPACED_REPETITION_RECENT_DAYS=7
+SPACED_REPETITION_MEDIUM_MIN_DAYS=20
+SPACED_REPETITION_MEDIUM_MAX_DAYS=40
+SPACED_REPETITION_LONG_MIN_DAYS=80
+SPACED_REPETITION_LONG_MAX_DAYS=100
+SPACED_REPETITION_MAX_RECENT=3
+SPACED_REPETITION_MAX_MEDIUM=2
+SPACED_REPETITION_MAX_LONG=1
+
+gspaced-repetition() {
     local target_dirs=()
+    local doc_types=()
     
-    # Parse directories passed as positional parameters
-    while [[ $# -gt 0 && ! "$1" =~ ^[0-9]+$ ]]; do
-        target_dirs+=("$1")
+    # Parse prefixed file-type options first, then treat remaining arguments as directories.
+    while [[ $# -gt 0 ]]; do
+        case "${1,,}" in
+            -md|-pdf|-txt|-doc|-docx|-odt|-rtf|-epub)
+                doc_types+=("${1:1}")
+                ;;
+            -both)
+                doc_types+=(md pdf)
+                ;;
+            -all)
+                doc_types=(md pdf txt doc docx odt rtf epub)
+                ;;
+            -*)
+                echo "Usage: gspaced-repetition [-md] [-pdf] [-both] [directory ...]" >&2
+                return 2
+                ;;
+            *)
+                target_dirs+=("$1")
+                ;;
+        esac
         shift
     done
     
@@ -132,14 +160,20 @@ gspaced-repetition-md-only() {
     if [ ${#target_dirs[@]} -eq 0 ]; then
         target_dirs=(".")
     fi
+
+    if [ ${#doc_types[@]} -eq 0 ]; then
+        doc_types=(md pdf txt doc docx odt rtf epub)
+    fi
+
+    local find_name_args=()
+    for doc_type in "${doc_types[@]}"; do
+        if [ ${#find_name_args[@]} -gt 0 ]; then
+            find_name_args+=(-o)
+        fi
+        find_name_args+=(-iname "*.${doc_type}")
+    done
     
-    # Remaining arguments are numeric parameters
-    local days="${1:-7}"
-    local max_short_term="${2:-3}"
-    local max_medium_term="${3:-2}"
-    local max_long_term="${4:-1}"
-    
-    local total_max=$((max_short_term + max_medium_term + max_long_term))
+    local total_max=$((SPACED_REPETITION_MAX_RECENT + SPACED_REPETITION_MAX_MEDIUM + SPACED_REPETITION_MAX_LONG))
     
     local quotes=(
         # "Recall, don't relearn! Skim headings and move on."
@@ -169,24 +203,24 @@ gspaced-repetition-md-only() {
     echo "========================================================="
     
     # 1. Recent Review
-    echo -e "\n[!] Fresh Notes (Last $days days | Max: $max_short_term):"
+    echo -e "\n[!] Fresh Notes (Last $SPACED_REPETITION_RECENT_DAYS days | Max: $SPACED_REPETITION_MAX_RECENT):"
     # echo -e "\n[!] These are new. No problem"
     while IFS= read -r note; do
         _print_terminal_link "$note"
-    done < <(find "${target_dirs[@]}" -name "*.md" -mtime -"$days" 2>/dev/null | shuf -n "$max_short_term" | sort)
+    done < <(find "${target_dirs[@]}" \( "${find_name_args[@]}" \) -mtime -"$SPACED_REPETITION_RECENT_DAYS" 2>/dev/null | shuf -n "$SPACED_REPETITION_MAX_RECENT" | sort)
     
     # 2. Medium-Term Review
-    echo -e "\n[!] ~1 Month Ago (20-40 days | Max: $max_medium_term):"
+    echo -e "\n[!] ~1 Month Ago ($SPACED_REPETITION_MEDIUM_MIN_DAYS-$SPACED_REPETITION_MEDIUM_MAX_DAYS days | Max: $SPACED_REPETITION_MAX_MEDIUM):"
     echo -e "[!] Should be easy?"
     while IFS= read -r note; do
         _print_terminal_link "$note"
-    done < <(find "${target_dirs[@]}" -name "*.md" -mtime +20 -mtime -40 2>/dev/null | shuf -n "$max_medium_term" | sort)
+    done < <(find "${target_dirs[@]}" \( "${find_name_args[@]}" \) -mtime +"$SPACED_REPETITION_MEDIUM_MIN_DAYS" -mtime -"$SPACED_REPETITION_MEDIUM_MAX_DAYS" 2>/dev/null | shuf -n "$SPACED_REPETITION_MAX_MEDIUM" | sort)
     
     # 3. Long-Term Review
-    echo -e "\n[!] ~3 Months Ago (80-100 days | Max: $max_long_term):"
+    echo -e "\n[!] ~3 Months Ago ($SPACED_REPETITION_LONG_MIN_DAYS-$SPACED_REPETITION_LONG_MAX_DAYS days | Max: $SPACED_REPETITION_MAX_LONG):"
     while IFS= read -r note; do
         _print_terminal_link "$note"
-    done < <(find "${target_dirs[@]}" -name "*.md" -mtime +80 -mtime -100 2>/dev/null | shuf -n "$max_long_term" | sort)
+    done < <(find "${target_dirs[@]}" \( "${find_name_args[@]}" \) -mtime +"$SPACED_REPETITION_LONG_MIN_DAYS" -mtime -"$SPACED_REPETITION_LONG_MAX_DAYS" 2>/dev/null | shuf -n "$SPACED_REPETITION_MAX_LONG" | sort)
 }
 
 ############################################################
@@ -207,17 +241,52 @@ _print_terminal_link() {
     fi
 }
 
-# Get all across one or multiple sketches
+# Get all document files across one or multiple sketches
 gsketch() {
-    local target_dirs=("$@")
+    local target_dirs=()
+    local doc_types=()
+
+    for arg in "$@"; do
+        case "${arg,,}" in
+            -md|-pdf|-txt|-doc|-docx|-odt|-rtf|-epub)
+                doc_types+=("${arg:1}")
+                ;;
+            -both)
+                doc_types+=(md pdf)
+                ;;
+            -all)
+                doc_types=(md pdf txt doc docx odt rtf epub)
+                ;;
+            -*)
+                echo "Usage: gsketch-all [-md] [-pdf] [-both] [directory ...]" >&2
+                return 2
+                ;;
+            *)
+                target_dirs+=("$arg")
+                ;;
+        esac
+    done
+
     if [ ${#target_dirs[@]} -eq 0 ]; then
         target_dirs=(".")
     fi
+
+    if [ ${#doc_types[@]} -eq 0 ]; then
+        doc_types=(md pdf txt doc docx odt rtf epub)
+    fi
+
+    local find_name_args=()
+    for doc_type in "${doc_types[@]}"; do
+        if [ ${#find_name_args[@]} -gt 0 ]; then
+            find_name_args+=(-o)
+        fi
+        find_name_args+=(-iname "*.${doc_type}")
+    done
     
-    echo ">> All (Sorted By Last Modified; click a path to open it):"
+    echo ">> All Documents (Sorted By Last Modified; click a path to open it):"
     while IFS= read -r entry; do
         _print_terminal_link "${entry#* }"
-    done < <(find "${target_dirs[@]}" \( -name "*.md" -o -name "*.pdf" \) -printf "%T@ %p\n" 2>/dev/null | sort -n)
+    done < <(find "${target_dirs[@]}" \( "${find_name_args[@]}" \) -printf "%T@ %p\n" 2>/dev/null | sort -n)
 }
 
 ############################################################
