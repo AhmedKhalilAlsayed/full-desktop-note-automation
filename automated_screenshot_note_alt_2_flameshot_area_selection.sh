@@ -1,6 +1,6 @@
 #! /bin/env bash
 
-# v4
+# v4+
 
 # 1. Configuration
 # Increase this slightly if it still fails. 0.4s is safer for GNOME animations.
