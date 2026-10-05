@@ -6,6 +6,7 @@
 # The directory structure
 
 # sketch
+#       sketch
 #		notes/docs
 #		lec
 #			notes/docs
@@ -111,29 +112,31 @@ mnote() {
         code -n "$file" && cd ..
     fi
     
-    notify-send -t 5000 "Learning" "Learn&Think Not Memorize. This is not an exam."
+    notify-send -t 5000 "Learning" "Learn Not Memorize. This is not an exam."
 }
 
 
 #####################################################
 # spaced-repetition
 
-# Spaced-repetition settings. Edit these values to change the review ranges
-# and the maximum number of files selected for each range.
+# Spaced-repetition settings. Edit these values to change the review windows
+# and the maximum number of files selected for each window.
+
+# Recent: files modified within the last week.
 SPACED_REPETITION_RECENT_DAYS=7
-SPACED_REPETITION_MEDIUM_MIN_DAYS=20
-SPACED_REPETITION_MEDIUM_MAX_DAYS=40
-SPACED_REPETITION_LONG_MIN_DAYS=80
-SPACED_REPETITION_LONG_MAX_DAYS=100
+# Past: files modified after the recent window, up to this age.
+# Use max day count OR "*" to include all older documents.
+SPACED_REPETITION_PAST_MAX_DAYS="*" #70
+# Maximum number of files selected from each window.
 SPACED_REPETITION_MAX_RECENT=3
-SPACED_REPETITION_MAX_MEDIUM=1
-SPACED_REPETITION_MAX_LONG=1
+SPACED_REPETITION_MAX_PAST=2
+# local database path
+SPACED_REPETITION_DB="${XDG_DATA_HOME:-$HOME/.local/share}/full-desktop-note-automation/repetition.tsv"
 
 gspaced-repetition() {
     local target_dirs=()
     local doc_types=()
-    
-    # Parse prefixed file-type options first, then treat remaining arguments as directories.
+
     while [[ $# -gt 0 ]]; do
         case "${1,,}" in
             -md|-pdf|-txt|-doc|-docx|-odt|-rtf|-epub)
@@ -172,55 +175,155 @@ gspaced-repetition() {
         fi
         find_name_args+=(-iname "*.${doc_type}")
     done
-    
-    local total_max=$((SPACED_REPETITION_MAX_RECENT + SPACED_REPETITION_MAX_MEDIUM + SPACED_REPETITION_MAX_LONG))
-    
-    local quotes=(
-        # "Recall, don't relearn! Skim headings and move on."
-        # "Not an exam! You're refreshing map locations, not memorizing text."
-        # "If it's complex, schedule a dedicated session. NOT NOW!"
-        "Your notes are your external brain. You only need conceptual awareness."
-        # "Don't stare at words without absorbing. Keep it moving!"
-        "Focus on fast retrieval, not perfection."
-        "For a long, productive career, not a one-day college exam."
-        "Not in marathon!!!"
-        "التطبيق والشغل بايدك هو الي بيعلم بجد"
-        "شوف الشغل واتعلم منه"
-        # "Saving your Saturday for real project work!"
-    )
-    
-    local random_quote="${quotes[$RANDOM % ${#quotes[@]}]}"
-    
-    echo "========================================================="
-    echo ">> Spaced Repetition Review Dashboard <<"
-    echo "Target Directories:"
-    for dir in "${target_dirs[@]}"; do
-        echo "  - $(realpath "$dir")"
+
+    mkdir -p "$(dirname "$SPACED_REPETITION_DB")" || {
+        echo "Could not create spaced-repetition database directory: $(dirname "$SPACED_REPETITION_DB")" >&2
+        return 1
+    }
+    touch "$SPACED_REPETITION_DB" || {
+        echo "Could not open spaced-repetition database: $SPACED_REPETITION_DB" >&2
+        return 1
+    }
+
+    local now
+    now=$(date +%s)
+    local recent_candidates past_candidates
+    recent_candidates=$(mktemp) || return 1
+    past_candidates=$(mktemp) || {
+        rm -f "$recent_candidates"
+        return 1
+    }
+
+    while IFS= read -r note; do
+        local path modified age_days rating next_review priority candidate_file
+        path=$(realpath -- "$note") || continue
+        modified=$(stat -c %Y -- "$path") || continue
+        age_days=$(( (now - modified) / 86400 ))
+        if (( age_days < SPACED_REPETITION_RECENT_DAYS )); then
+            candidate_file="$recent_candidates"
+        elif [ "$SPACED_REPETITION_PAST_MAX_DAYS" = "*" ] ||
+             (( age_days < SPACED_REPETITION_PAST_MAX_DAYS )); then
+            candidate_file="$past_candidates"
+        else
+            continue
+        fi
+        IFS=$'\t' read -r rating next_review < <(awk -F '\t' -v path="$path" '$1 == path { print $2 "\t" $4; found=1 } END { if (!found) print "0\t0" }' "$SPACED_REPETITION_DB")
+        if [ "$rating" != "0" ] && [ "$next_review" -gt "$now" ]; then
+            continue
+        fi
+        if [ "$rating" = "4" ]; then
+            continue
+        elif [ "$rating" = "0" ]; then
+            priority=0
+        elif [ "$next_review" -le "$now" ]; then
+            priority=$((1 + rating))
+        else
+            priority=$((10 + rating))
+        fi
+        printf '%03d\t%s\n' "$priority" "$path" >> "$candidate_file"
+    done < <(find "${target_dirs[@]}" -type f \( "${find_name_args[@]}" \) -print 2>/dev/null | sort -u)
+
+    local -a recent_list past_list review_list
+    mapfile -t recent_list < <(sort -n -k1,1 -k2,2 "$recent_candidates" | cut -f2- | awk '!seen[$0]++' | head -n "$SPACED_REPETITION_MAX_RECENT")
+    mapfile -t past_list < <(sort -n -k1,1 -k2,2 "$past_candidates" | cut -f2- | awk '!seen[$0]++' | head -n "$SPACED_REPETITION_MAX_PAST")
+    rm -f "$recent_candidates" "$past_candidates"
+    review_list=("${recent_list[@]}" "${past_list[@]}")
+    if [ ${#review_list[@]} -eq 0 ]; then
+        echo "No documents are due in the configured review windows."
+        return 0
+    fi
+
+    while [ ${#review_list[@]} -gt 0 ]; do
+        echo "========================================================="
+        echo ">> Spaced Repetition Review"
+        echo "Choose a document to review (q to quit):"
+        local index=1
+        local section_note display_path
+        if [ ${#recent_list[@]} -gt 0 ]; then
+            echo "-- Recent (last $SPACED_REPETITION_RECENT_DAYS days) --"
+            for section_note in "${recent_list[@]}"; do
+                display_path="${section_note#"$PWD"/}"
+                printf '%2d) ' "$index"
+                _print_terminal_link "$section_note" "$display_path"
+                ((index++))
+            done
+        fi
+        if [ ${#past_list[@]} -gt 0 ]; then
+            if [ "$SPACED_REPETITION_PAST_MAX_DAYS" = "*" ]; then
+                echo "-- Past ($SPACED_REPETITION_RECENT_DAYS+ days ago) --"
+            else
+                echo "-- Past ($SPACED_REPETITION_RECENT_DAYS-$SPACED_REPETITION_PAST_MAX_DAYS days ago) --"
+            fi
+            for section_note in "${past_list[@]}"; do
+                display_path="${section_note#"$PWD"/}"
+                printf '%2d) ' "$index"
+                _print_terminal_link "$section_note" "$display_path"
+                ((index++))
+            done
+        fi
+        printf 'Selection: '
+        local selection
+        read -r selection || break
+        [ "$selection" = "q" ] || [ "$selection" = "Q" ] && break
+        if ! [[ "$selection" =~ ^[0-9]+$ ]] || (( selection < 1 || selection > ${#review_list[@]} )); then
+            echo "Please choose a listed number or q."
+            continue
+        fi
+
+        local selected="${review_list[$((selection - 1))]}"
+        xdg-open "$selected" >/dev/null 2>&1 &
+        printf 'Feedback (1=hard/important, 2=good/normal, 3=easy/repeated, 4=skip permanently): '
+        local feedback
+        read -r feedback || break
+        if ! [[ "$feedback" =~ ^[1234]$ ]]; then
+            echo "Feedback must be 1, 2, 3, or 4; the document was not recorded."
+            continue
+        fi
+
+        if [ "$feedback" = "4" ]; then
+            local temp_db
+            temp_db=$(mktemp) || return 1
+            awk -F '\t' -v OFS='\t' -v path="$selected" '$1 != path' "$SPACED_REPETITION_DB" > "$temp_db"
+            printf '%s\t4\t%s\t0\t0\n' "$selected" "$now" >> "$temp_db"
+            mv "$temp_db" "$SPACED_REPETITION_DB"
+            echo "Skipped permanently. It will not appear in future reviews."
+            for list_name in recent_list past_list; do
+                declare -n current_list="$list_name"
+                for list_index in "${!current_list[@]}"; do
+                    if [ "${current_list[$list_index]}" = "$selected" ]; then
+                        unset "current_list[$list_index]"
+                    fi
+                done
+                current_list=("${current_list[@]}")
+            done
+            review_list=("${recent_list[@]}" "${past_list[@]}")
+            continue
+        fi
+
+        local interval_days
+        case "$feedback" in
+            1) interval_days=1 ;;
+            2) interval_days=7 ;;
+            3) interval_days=30 ;;
+        esac
+        local next_review=$((now + interval_days * 86400))
+        local temp_db
+        temp_db=$(mktemp) || return 1
+        awk -F '\t' -v OFS='\t' -v path="$selected" '$1 != path' "$SPACED_REPETITION_DB" > "$temp_db"
+        printf '%s\t%s\t%s\t%s\t%s\n' "$selected" "$feedback" "$now" "$next_review" "$interval_days" >> "$temp_db"
+        mv "$temp_db" "$SPACED_REPETITION_DB"
+        for list_name in recent_list past_list; do
+            declare -n current_list="$list_name"
+            for list_index in "${!current_list[@]}"; do
+                if [ "${current_list[$list_index]}" = "$selected" ]; then
+                    unset "current_list[$list_index]"
+                fi
+            done
+            current_list=("${current_list[@]}")
+        done
+        review_list=("${recent_list[@]}" "${past_list[@]}")
+        echo "Recorded feedback $feedback. Next review in $interval_days day(s)."
     done
-    echo "Max Review Target  : $total_max files max"
-    echo "---------------------------------------------------------"
-    echo "💡 REMINDER: $random_quote"
-    echo "========================================================="
-    
-    # 1. Recent Review
-    echo -e "\n[!] Fresh Notes (Last $SPACED_REPETITION_RECENT_DAYS days | Max: $SPACED_REPETITION_MAX_RECENT):"
-    # echo -e "\n[!] These are new. No problem"
-    while IFS= read -r note; do
-        _print_terminal_link "$note"
-    done < <(find "${target_dirs[@]}" \( "${find_name_args[@]}" \) -mtime -"$SPACED_REPETITION_RECENT_DAYS" 2>/dev/null | shuf -n "$SPACED_REPETITION_MAX_RECENT" | sort)
-    
-    # 2. Medium-Term Review
-    echo -e "\n[!] ~1 Month Ago ($SPACED_REPETITION_MEDIUM_MIN_DAYS-$SPACED_REPETITION_MEDIUM_MAX_DAYS days | Max: $SPACED_REPETITION_MAX_MEDIUM):"
-    echo -e "[!] Should be easy?"
-    while IFS= read -r note; do
-        _print_terminal_link "$note"
-    done < <(find "${target_dirs[@]}" \( "${find_name_args[@]}" \) -mtime +"$SPACED_REPETITION_MEDIUM_MIN_DAYS" -mtime -"$SPACED_REPETITION_MEDIUM_MAX_DAYS" 2>/dev/null | shuf -n "$SPACED_REPETITION_MAX_MEDIUM" | sort)
-    
-    # 3. Long-Term Review
-    echo -e "\n[!] ~3 Months Ago ($SPACED_REPETITION_LONG_MIN_DAYS-$SPACED_REPETITION_LONG_MAX_DAYS days | Max: $SPACED_REPETITION_MAX_LONG):"
-    while IFS= read -r note; do
-        _print_terminal_link "$note"
-    done < <(find "${target_dirs[@]}" \( "${find_name_args[@]}" \) -mtime +"$SPACED_REPETITION_LONG_MIN_DAYS" -mtime -"$SPACED_REPETITION_LONG_MAX_DAYS" 2>/dev/null | shuf -n "$SPACED_REPETITION_MAX_LONG" | sort)
 }
 
 ############################################################

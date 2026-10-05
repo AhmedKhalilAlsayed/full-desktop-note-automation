@@ -94,9 +94,9 @@ mynotes/                           # your root directory
 - `msketch "sketch name"`: **make sketch** – Creates a new sketch and changes into its directory.
 - `mlec "lec name"`: **make lecture** – Creates a new lecture inside the current sketch, changes into it, and opens VS Code automatically.
 - `mnote "note name"`: **make note** – Creates a new note in the current directory and opens VS Code.
-- `gsketch`: **get all documents** – Lists document files recursively, sorted by last modified date. By default it includes Markdown, PDF, text, Word, OpenDocument, RTF, and EPUB files. Pass prefixed file-type options such as `-md`, `-pdf`, or `-both`, followed by optional directories. In supporting terminals, click a path to open the file in the GUI.
+- `gsketch-all`: **get all documents** – Lists document files recursively, sorted by last modified date. By default it includes Markdown, PDF, text, Word, OpenDocument, RTF, and EPUB files. Pass prefixed file-type options such as `-md`, `-pdf`, or `-both`, followed by optional directories. In supporting terminals, click a path to open the file in the GUI.
 - `gsketches`: **get sketches** – Lists all directories containing `sketch` in their name as a sorted tree, including each full path to distinguish repeated names. In supporting terminals, click a path to open the directory in the GUI. Pass one or more directories to search specific locations.
-- `gspaced-repetition`: **get/make spaced-repetition** – Launches the spaced repetition tool across all supported document types by default. Pass prefixed file-type options such as `-md`, `-pdf`, or `-both`, followed by optional directories. Review ranges and batch sizes are configured manually in `note-workflow.sh`.
+- `gspaced-repetition`: **interactive spaced repetition** – Uses a local TSV database to remember each document's difficulty and next review date. It displays two blocks based on modification time: Recent (last 7 days) and Past (older than Recent, up to the configured maximum age). Paths are shown relative to the current directory. Choose a numbered document, it opens with `xdg-open`, then enter `1` (hard/important), `2` (good/normal), `3` (easy/repeated), or `4` (skip permanently). Pass prefixed file-type options such as `-md`, `-pdf`, or `-both`, followed by optional directories.
 - `cdp`: change to the parent directory of the note/lec md file.
 - ![msketch command](Recording-msketch.gif)
 ---
@@ -114,8 +114,11 @@ mynotes/                           # your root directory
 The built‑in shell utility `gspaced-repetition`:
 - Example: `gspaced-repetition -md ~/notes` or `gspaced-repetition -md -pdf ~/notes`.
 - If no file-type option is provided, all supported document types are included.
-- Change the review ranges and per-range limits by editing the `SPACED_REPETITION_*` settings in `note-workflow.sh`.
-- Randomly samples your notes based on interval brackets (Last 7 Days, ~1 Month Ago, ~3 Months Ago).
+- Feedback is stored in `${XDG_DATA_HOME:-~/.local/share}/full-desktop-note-automation/repetition.tsv`.
+- Change the review windows and maximum number of selected documents by editing the `SPACED_REPETITION_*` settings in `note-workflow.sh`.
+- Review intervals use a simple adaptive schedule: hard/important = 1 day, good/normal = 7 days, easy/repeated = 30 days. Skipped documents are stored as permanently excluded.
+- Suggested windows are recent = 0–7 days and past = 8–3650 days. Set `SPACED_REPETITION_PAST_MAX_DAYS` to a number such as `70` for a limit, or `"*"` to include all older documents.
+- Displays separate recent and past blocks using the configured time windows.
 - Caps reviews to small, manageable batches to prevent study burnout.
 - Integrates native desktop notifications (`notify-send`) with randomised mindset reminders, keeping reviews fast and concept‑focused.
 
@@ -267,7 +270,7 @@ mynotes/                           # مجلدك الرئيسي
 - `gnotes` – بيعرض كل ملفات Markdown وPDF جوه السكتش الحالي بالترتيب حسب تاريخ التعديل، وفي التيرمنالات اللي بتدعم الروابط تقدر تدوس على المسار عشان تفتح الملف.
 - `gsketch` – بيعرض كل ملفات المستندات (Markdown وPDF وTXT وWord وOpenDocument وRTF وEPUB) بالترتيب حسب تاريخ التعديل. استخدم اختيارات بالشكل `-md` أو `-pdf` أو `-both` ثم اكتب المجلدات، ولو ممررتش نوع هيعرض كل الأنواع.
 - `gsketches` – بيعرض كل المجلدات اللي اسمها بيحتوي على `sketch` في شكل شجرة مرتبة، مع المسار الكامل عشان تفرق بين الأسماء المتكررة. وفي التيرمنالات اللي بتدعم الروابط تقدر تدوس على المسار عشان تفتح المجلد. ممكن تمرر له مجلد أو أكثر للبحث في أماكن محددة.
-- `gspaced-repetition` – بيشغل أداة المراجعة المكثفة. استخدم اختيارات أنواع الملفات بالشكل `-md` أو `-pdf` أو `-both` ثم اكتب المجلدات، مثل `gspaced-repetition -md -pdf ~/notes`. لو مفيش اختيار نوع ملف، بيستخدم كل الأنواع المدعومة. تقدر تغير فترات المراجعة وعدد الملفات يدوياً من إعدادات `SPACED_REPETITION_*` في `note-workflow.sh`، والمسارات بتكون قابلة للضغط في التيرمنال المدعوم.
+- `gspaced-repetition` – بيشغل مراجعة تفاعلية ببلوكين فقط: Recent لآخر ٧ أيام، وPast للملفات الأقدم من كده لحد الحد الأقصى المحدد. اختار رقم الملف، هيفتح باستخدام `xdg-open`، وبعدها اكتب `1` (صعب/مهم)، `2` (جيد/عادي)، `3` (سهل/للتكرار)، أو `4` (تخطي نهائي). الملفات المتخطية بتتحفظ في قاعدة البيانات ومش هتظهر في المراجعات المستقبلية. استخدم اختيارات أنواع الملفات بالشكل `-md` أو `-pdf` أو `-both` ثم اكتب المجلدات، مثل `gspaced-repetition -md -pdf ~/notes`. لو مفيش اختيار نوع ملف، بيستخدم كل الأنواع المدعومة.
 
 ---
 
