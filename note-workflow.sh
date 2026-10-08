@@ -137,6 +137,8 @@ gspaced-repetition() {
     local target_dirs=()
     local doc_types=()
 
+    echo "Searching..."
+
     while [[ $# -gt 0 ]]; do
         case "${1,,}" in
             -md|-pdf|-txt|-doc|-docx|-odt|-rtf|-epub)
@@ -348,6 +350,8 @@ _print_terminal_link() {
 gsketch() {
     local target_dirs=()
     local doc_types=()
+
+    echo "Searching..."
 
     for arg in "$@"; do
         case "${arg,,}" in
